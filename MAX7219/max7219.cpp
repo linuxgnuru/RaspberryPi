@@ -44,7 +44,7 @@ const char ShutDown    = 0x0C;
 const char DisplayTest = 0x0F;
 
 
-const char numOfDevices = 2;
+const char numOfDevices = 4;
 
 /******************************************************************************
 ***   Function Definitions                                                  ***
@@ -68,7 +68,7 @@ class RasPiSPI
 	private:
 		int SpiFd; // File descriptor of spi port
 		
-		char *TxBuffer;
+		unsigned char *TxBuffer;
 		char *RxBuffer;
 		
 		int TxBufferIndex;
@@ -89,7 +89,7 @@ RasPiSPI::RasPiSPI() // CONSTRUCTOR
 {
 	if(DEBUG_ACTIVE > 0) {cout << "RasPiSPI Konstruktor" << endl;}
 	
-	TxBuffer = new char[1024]; // Buffer for TxData
+	TxBuffer = new unsigned char[1024]; // Buffer for TxData
 	RxBuffer = new char[1024]; // Buffer for RxData
 	
 	TxBufferIndex = 0;
@@ -102,7 +102,7 @@ RasPiSPI::~RasPiSPI() // DESTRUCTOR
 	delete[] TxBuffer;
 	delete[] RxBuffer;
 	
-	close(SpiFd); // Close SPI port
+	//close(SpiFd); // Close SPI port
 }
 
 RasPiSPI SPI; // Create class SPI
@@ -123,7 +123,9 @@ void RasPiSPI::transfer(char c)
 }
 void RasPiSPI::endTransfer()
 {
-	int temp = write(SpiFd, TxBuffer, TxBufferIndex); // Write the data from TxBuffer to the SPI bus...
+	//int temp = write(SpiFd, TxBuffer, TxBufferIndex); // Write the data from TxBuffer to the SPI bus...
+	//int temp = write(SpiFd, TxBuffer, TxBufferIndex); // Write the data from TxBuffer to the SPI bus...
+    int temp = wiringPiSPIDataRW(0, TxBuffer, TxBufferIndex);
 	if(DEBUG_ACTIVE > 1)
 	{ // Debug level 2
 		cout << "Written: " << temp << " Index: " << TxBufferIndex << " Buffer: ";
@@ -258,6 +260,24 @@ void setup()
 	SetData(Digit6, 0b01000000, 2);
 	SetData(Digit7, 0b10000000, 2);
 
+	SetData(Digit0, 0b10000000, 3);
+	SetData(Digit1, 0b01000000, 3);
+	SetData(Digit2, 0b00100000, 3);
+	SetData(Digit3, 0b00010000, 3);
+	SetData(Digit4, 0b00001000, 3);
+	SetData(Digit5, 0b00000100, 3);
+	SetData(Digit6, 0b00000010, 3);
+	SetData(Digit7, 0b00000001, 3);
+
+	SetData(Digit0, 0b00000001, 4);
+	SetData(Digit1, 0b00000010, 4);
+	SetData(Digit2, 0b00000100, 4);
+	SetData(Digit3, 0b00001000, 4);
+	SetData(Digit4, 0b00010000, 4);
+	SetData(Digit5, 0b00100000, 4);
+	SetData(Digit6, 0b01000000, 4);
+	SetData(Digit7, 0b10000000, 4);
+
 	if(DEBUG_ACTIVE > 0) {cout << "Delay 1000" << endl;}
 	delay(1000);
 
@@ -298,6 +318,8 @@ void loop()
         // ...and then write them to the two devices
         SetData(rowCounter+1, char(rowBuffer[rowCounter]), 1);
         SetData(rowCounter+1, char(rowBuffer[rowCounter]>>8), 2);
+        SetData(rowCounter+1, char(rowBuffer[rowCounter]>>16), 3);
+        SetData(rowCounter+1, char(rowBuffer[rowCounter]>>24), 4);
       }    
       delay(100);
     }
